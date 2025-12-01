@@ -1,17 +1,17 @@
 CREATE TABLE Users (
     ID INT AUTO_INCREMENT PRIMARY KEY,
-    Username TEXT NOT NULL,
-    Firstname TEXT,
-    Lastname TEXT,
-    Email TEXT NOT NULL UNIQUE,
-    Role TEXT CHECK (Role IN ('Ecole', 'Entreprise', 'Admin', 'Default')),
-    Password TEXT NOT NULL,
+    Username VARCHAR(255) NOT NULL,
+    Firstname VARCHAR(100),
+    Lastname VARCHAR(100),
+    Email VARCHAR(255) NOT NULL UNIQUE,
+    Role ENUM('Ecole', 'Entreprise', 'Admin', 'Default'),
+    Password VARCHAR(255) NOT NULL,
     active BOOL DEFAULT 1
 );
 
 CREATE TABLE Quizzs (
     ID INT AUTO_INCREMENT PRIMARY KEY,
-    Name TEXT NOT NULL,
+    Name VARCHAR(255) NOT NULL,
     Creator_id INT NOT NULL,
     active BOOL DEFAULT 1,
     finished BOOL DEFAULT 0,
