@@ -61,7 +61,7 @@ class JWT
 
 /*
 
-$jwtHelper = new \APP\Helpers\JWT();
+$jwtHelper = JWT();
 $token = $jwtHelper->encode(['user_id' => 123, 'role' => 'admin']);
 echo "JWT Token: " . $token;
 

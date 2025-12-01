@@ -1,0 +1,45 @@
+version: '3'
+
+services:
+  quizzeo_web:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: quizzeo_web
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www/html
+    depends_on:
+      - quizzeo_db
+    networks:
+      quizzeo_network:
+        ipv4_address: 10.1.10.2
+
+  quizzeo_db:
+    image: mariadb:11
+    container_name: quizzeo_db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: quizzeo
+      MYSQL_USER: user
+      MYSQL_PASSWORD: userpassword
+    expose:
+      - "3306"
+    volumes:
+      - quizzeo_db_data:/var/lib/mysql
+      - ./mysql:/var/lib/mysql-initialization-scripts
+    networks:
+      quizzeo_network:
+        ipv4_address: 10.1.10.3
+    #command: bash -c "mariadb -u root -prootpassword quizzeo < /var/lib/mysql-initialization-scripts/req.sql"
+
+networks:
+  quizzeo_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.1.10.0/24
+
+volumes:
+  quizzeo_db_data:

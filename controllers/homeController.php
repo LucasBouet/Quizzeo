@@ -1,9 +1,14 @@
 <?php
 
-require "models/XXX";
+require "models/databaseModel.php";
+require "models/jwt.php";
 
-
-
+if (isset($_COOKIE["auth_token"])) {
+    echo $_COOKIE["auth_token"];
+    $jwtHelper = new JWT();
+    $jwt = $jwtHelper->decode($_COOKIE["auth_token"]);
+    var_dump($jwt);
+}
 
 
 require "views/header.php";
