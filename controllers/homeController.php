@@ -9,7 +9,7 @@ if (isset($_COOKIE["auth_token"])) {
     $jwt = $jwtHelper->decode($_COOKIE["auth_token"]);
     var_dump($jwt);
 } else {
-    echo "you must be logged in"
+    echo "you must be logged in <a style='color: blue;' href='/register'>register there</a>";
 }
 
 
