@@ -8,6 +8,8 @@ if (isset($_COOKIE["auth_token"])) {
     $jwtHelper = new JWT();
     $jwt = $jwtHelper->decode($_COOKIE["auth_token"]);
     var_dump($jwt);
+} else {
+    echo "you must be logged in"
 }
 
 
