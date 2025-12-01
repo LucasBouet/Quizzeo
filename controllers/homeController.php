@@ -7,7 +7,12 @@ if (isset($_COOKIE["auth_token"])) {
     echo $_COOKIE["auth_token"];
     $jwtHelper = new JWT();
     $jwt = $jwtHelper->decode($_COOKIE["auth_token"]);
-    var_dump($jwt);
+    if ($jwt) {
+        var_dump($jwt);
+    } else {
+        echo "Invalid token.";
+    }
+    
 } else {
     echo "you must be logged in <a style='color: blue;' href='/register'>register there</a>";
 }
