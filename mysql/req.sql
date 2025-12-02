@@ -35,8 +35,8 @@ CREATE TABLE Participation_users (
 
 CREATE TABLE Questions_checkbox_ecole (
     ID INT AUTO_INCREMENT PRIMARY KEY,
-    Question TEXT NOT NULL,
     Quizz_id INT NOT NULL,
+    Question TEXT NOT NULL,
     Position INT,
     Passed INT DEFAULT 0,
     Points INT,
@@ -58,6 +58,7 @@ CREATE TABLE Answers_checkbox_ecole (
 CREATE TABLE Questions_libre_ecole (
     ID INT AUTO_INCREMENT PRIMARY KEY,
     Quizz_id INT NOT NULL,
+    Question TEXT NOT NULL,
     Position INT,
     Reponse TEXT,
     Passed INT DEFAULT 0,
@@ -70,6 +71,7 @@ CREATE TABLE Questions_libre_ecole (
 CREATE TABLE Questions_libre_entreprise (
     ID INT AUTO_INCREMENT PRIMARY KEY,
     Quizz_id INT NOT NULL,
+    Question TEXT NOT NULL,
     Position INT,
     FOREIGN KEY (Quizz_id) REFERENCES Quizzs(ID)
         ON DELETE CASCADE

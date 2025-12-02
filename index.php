@@ -7,7 +7,7 @@ $path = match(explode('?', $_SERVER["REQUEST_URI"])[0]) {
     '/quizz'=> 'controllers/quizzController.php',
     '/login'=> 'controllers/loginController.php',
     '/register'=> 'controllers/registerController.php',
-    default => '404.php',
+    default => 'views/404.php',
 };
 
 require $path;
