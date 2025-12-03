@@ -124,6 +124,63 @@ if (isset($_COOKIE["auth_token"])) {
             } elseif ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 // Handle GET request
             }
+            
+    } elseif ($role == 'Ecole') {
+        $quizzs = getAllQuizzs();
+        $questions = [];
+        $reponses = getReponseEcole();
+        $reponsesLibres = getReponseLibreEcole();
+        foreach ($quizzs as $quizz) {
+            $questions[$quizz['ID']] = [];
+            $maxPosition = getMaxPositionEcole($quizz['ID']);
+            var_dump($maxPosition);
+            echo "<br/>";
+            for ($i = 1; $i <= $maxPosition; $i++) {
+                array_push($questions[$quizz['ID']], getQuestionEcoleByQuizzAndPosition($quizz['ID'], $i));
+            }
+            
+        }
+        echo "<pre>";
+        var_dump($questions);
+        echo "</pre><br/>";
+        echo "<pre>";
+        var_dump($reponses);
+        echo "</pre><br/>";
+        echo "<pre>";
+        var_dump($reponsesLibres);
+        echo "</pre><br/>";
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (isset($_POST['function']) && $_POST['function'] == 'createQuizz') {
+                $name = $_POST['name'];
+                $id = createQuizz($name, $jwt);
+                echo "Quizz created successfully with id $id";
+            } elseif (isset($_POST['function']) && $_POST['function'] == 'createQuestion') {
+                $title = $_POST['title'];
+                $points = $_POST['points'];
+                $id = $_POST['id'];
+                $answers = $_POST['answers'] ?? '';
+                $isAnswer = $_POST['isAnswer'] ?? '';
+                $answerLibre = $_POST['answerLibre'] ?? '';
+                $type = $_POST['type'];
+                $position = getMaxPositionEcole($id) + 1;
+                
+                if ($type == 'multiple') {
+                    $qcmId = createQcmEcole($id, $position, $points, $title);
+                    foreach ($answers as $key => $answer) {
+                        createReponseQcmEcole($qcmId, $answer, $isAnswer[$key]);
+                    }
+                    echo "<script>window.location.href = window.location.pathname;</script>";
+                    exit;
+                } elseif ($type == 'libre') {
+                    createQuestionLibreEcole($id, $position, $title, $answerLibre, $points);
+                    echo "<script>window.location.href = window.location.pathname;</script>";
+                    exit;
+                }
+            }
+        } elseif ($_SERVER['REQUEST_METHOD'] === 'GET') {
+            // Handle GET request
+        }
+        
     } else {
         echo "Invalid token.";
         die();

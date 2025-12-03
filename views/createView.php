@@ -123,8 +123,31 @@ case "Entreprise":
 
 <?php endif; ?>
 
-<?php break; }?>
-
+<?php 
+break; 
+case 'Ecole':
+    echo "Welcome Ecole";
+    ?>
+    <h2>Create new quizz</h2>
+    <form action="#" method="post">
+        <input type="hidden" name="function" value="createQuizz">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" required>
+        <button type="submit">Submit</button>
+    </form>
+    
+    <?php if ($quizzs): ?>
+        <?php foreach($quizzs as $quizz): ?>
+            <div class="quizz">
+                <h3><?php echo $quizz['Name']; ?></h3>
+                
+            </div>
+        <?php endforeach; ?>
+    <?php endif; ?>
+    <?php
+    break;
+}?>
+<?php if ($role == 'Entreprise'): ?>
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
@@ -190,6 +213,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 </script>
-
+<?php endif; ?>
 </body>
 </html>

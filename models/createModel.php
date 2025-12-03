@@ -367,6 +367,20 @@ function getMaxPositionEntreprise(int $quizzId) : int {
     return (int) $result['maxpos'];
 }
 
+function getMaxPositionEcole(int $quizzId) : int {
+    $pdo = getDatabaseConnection();
+
+    $sql = "SELECT COALESCE(MAX(Position), 0) AS maxpos FROM Questions_libre_ecole WHERE Quizz_id = :qid UNION SELECT COALESCE(MAX(Position), 0) FROM Questions_checkbox_ecole WHERE Quizz_id = :qid2 ORDER BY maxpos DESC LIMIT 1;";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([
+        'qid' => $quizzId,
+        'qid2' => $quizzId
+    ]);
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    return (int) $result['maxpos'];
+}
 
 function getQuestionEntrepriseByQuizzAndPosition(int $id, int $position) {
     $pdo = getDatabaseConnection();
@@ -377,6 +391,24 @@ function getQuestionEntrepriseByQuizzAndPosition(int $id, int $position) {
         "position" => $position
     ]);
     return $stmt->fetch();
+}
+
+function getQuestionEcoleByQuizzAndPosition(int $id, int $position) {
+    $pdo = getDatabaseConnection();
+    $stmt = $pdo->prepare("SELECT * FROM (SELECT ID, Quizz_id, Position, Question, Points, 'libre' AS Type FROM Questions_libre_ecole WHERE Quizz_id = :quizz_id UNION ALL SELECT ID, Quizz_id, Position, Question, Points, 'checkbox' AS Type FROM Questions_checkbox_ecole WHERE Quizz_id = :quizz_id2) AS all_questions WHERE Position = :position ORDER BY ID LIMIT 1;");
+    $stmt->execute([
+        "quizz_id" => $id,
+        "quizz_id2" => $id,
+        "position" => $position
+    ]);
+    return $stmt->fetch();
+}
+
+function getReponseLibreEcole() {
+    $pdo = getDatabaseConnection();
+    $stmt = $pdo->prepare("SELECT Quizz_id, Reponse FROM Questions_libre_ecole;");
+    $stmt->execute();
+    return $stmt->fetchAll();
 }
 
 ?>
