@@ -24,3 +24,4 @@ function getAllByTable($table) {
     $stmt->execute();
     return $stmt->fetchAll();
 }
+?>

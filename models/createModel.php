@@ -345,23 +345,28 @@ function suppReponseQcmEntreprise(int $id) : void {
 
 function updateReponseQcmEntreprise(int $id, string $text): void {
     $pdo = getDatabaseConnection();
-    $stmt = $pdo->prepare("UPDATE `Answers_checkbox_entreprise` SET `Text` = :text, WHERE `Id` = :id");
+    $stmt = $pdo->prepare("UPDATE `Answers_checkbox_entreprise` SET `Text` = :text WHERE `Id` = :id");
     $stmt->execute([
         "id" => $id,
         "text" => $text,
     ]);
 }
 
-function getMaxPositionEntreprise(int $id) : int {
+function getMaxPositionEntreprise(int $quizzId) : int {
     $pdo = getDatabaseConnection();
-    $stmt = $pdo->prepare("SELECT COUNT(*) AS total FROM (SELECT id FROM Questions_libre_entreprise WHERE id = :id UNION SELECT id FROM Questions_checkbox_entreprise WHERE id = :id2) AS t;");
+
+    $sql = "SELECT COALESCE(MAX(Position), 0) AS maxpos FROM Questions_libre_entreprise WHERE Quizz_id = :qid UNION SELECT COALESCE(MAX(Position), 0) FROM Questions_checkbox_entreprise WHERE Quizz_id = :qid2 ORDER BY maxpos DESC LIMIT 1;";
+
+    $stmt = $pdo->prepare($sql);
     $stmt->execute([
-        "id" => $id,
-        "id2" => $id
+        'qid' => $quizzId,
+        'qid2' => $quizzId
     ]);
-    $result = $stmt->fetch();
-    return $result['total'];
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    return (int) $result['maxpos'];
 }
+
 
 function getQuestionEntrepriseByQuizzAndPosition(int $id, int $position) {
     $pdo = getDatabaseConnection();

@@ -14,19 +14,29 @@ if (isset($_COOKIE["auth_token"])) {
         if ($role == "Entreprise") {
             $quizzs = getAllQuizzs();
             $questions = [];
+            $reponses = getReponseQcmEntreprise();
             foreach ($quizzs as $quizz) {
                 $questions[$quizz['ID']] = [];
                 $maxPosition = getMaxPositionEntreprise($quizz['ID']);
+                var_dump($maxPosition);
+                echo "<br/>";
                 for ($i = 1; $i <= $maxPosition; $i++) {
                     array_push($questions[$quizz['ID']], getQuestionEntrepriseByQuizzAndPosition($quizz['ID'], $i));
                 }
+                
             }
+            echo "<pre>";
+            var_dump($questions);
+            echo "</pre><br/>";
+            echo "<pre>";
+            var_dump($reponses);
+            echo "</pre><br/>";
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (isset($_POST['function']) && $_POST['function'] == 'createQuizz') {
                     $name = $_POST['name'];
                     $id = createQuizz($name, $jwt);
                     echo "Quizz created successfully with id $id";
-                } elseif (isset($_POST['function']) && $_POST['function'] == 'createQuestion') {
+                } elseif (isset($_POST['function']) && $_POST['function'] == 'createQuestionEntreprise') {
                     $title = $_POST['title'];
                     $id = $_POST['id'];
                     $answers = $_POST['answers'] ?? '';
@@ -38,9 +48,78 @@ if (isset($_COOKIE["auth_token"])) {
                         foreach ($answers as $answer) {
                             createReponseQcmEntreprise($qcmId, $answer);
                         }
+                        echo "<script>window.location.href = window.location.pathname;</script>";
+                        exit;
                     } elseif ($type == 'libre') {
                         createQuestionLibreEntreprise($id, $position, $title);
+                        echo "<script>window.location.href = window.location.pathname;</script>";
+                        exit;
                     }
+                } elseif (isset($_POST['function']) && $_POST['function'] == 'updateQuestionLibreEntreprise') {
+                    $questionId = $_POST['id'];
+                    $question = $_POST['question'];
+                    $position = $_POST['position'];
+                    updateQuestionLibreEntreprise($questionId, $position, $question);
+                    echo "<script>window.location.href = window.location.pathname;</script>";
+                    exit;
+                    
+                } elseif (isset($_POST['function']) && $_POST['function'] == 'suppQuestionLibreEntreprise') {
+                    $questionId = $_POST['id'];
+                    suppQuestionLibreEntreprise($questionId);
+                    echo "<script>window.location.href = window.location.pathname;</script>";
+                    exit;
+                    
+                } elseif (isset($_POST['function']) && $_POST['function'] == 'suppQuizz') {
+                    $quizzId = $_POST['id'];
+                    suppQuizz($quizzId);
+                    echo "<script>window.location.href = window.location.pathname;</script>";
+                    exit;
+                    
+                } elseif (isset($_POST['function']) && $_POST['function'] == 'suppQuestionMultiple') {
+                    $questionId = $_POST['id'];
+                    suppQcmEntreprise($questionId);
+                    echo "<script>window.location.href = window.location.pathname;</script>";
+                    exit;
+                    
+                } elseif (isset($_POST['function']) && $_POST['function'] == 'updateQuestionMultiple') {
+                    $answers = $_POST['answers'];
+                    $answerIds = $_POST['answer_ids'] ?? [];
+                    $questionId = $_POST['id'];
+                    $question = $_POST['question'];
+                    $position = $_POST['position'];
+                    $subarray = $questions[$questionId];
+                    echo "<pre>";
+                    var_dump($reponses);
+                    var_dump($answers);
+                    echo "</pre>";
+                    $oldAnswers = [];
+                    foreach ($reponses as $rep) {
+                        $oldAnswers[$rep['ID']] = $rep['Text'];
+                    }
+                    
+                    if (isset($answerIds)) {
+                        foreach ($answerIds as $idx => $id) {
+                            if (isset($oldAnswers[$id])) {
+                                if ($oldAnswers[$id] != $answers[$idx]) {
+                                    updateReponseQcmEntreprise($id, $answers[$idx]);
+                                }
+                                unset($oldAnswers[$id]);
+                            }
+                        }
+                    }
+                    
+                    foreach ($oldAnswers as $id => $txt) {
+                        suppReponseQcmEntreprise($id);
+                    }
+                    
+                    if (count($answers) > count($answerIds)) {
+                        for ($i = count($answerIds); $i < count($answers); $i++) {
+                            createReponseQcmEntreprise($questionId, $answers[$i]);
+                        }
+                    }
+                    echo "<script>window.location.href = window.location.pathname;</script>";
+                    exit;
+                    
                 }
             } elseif ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 // Handle GET request
