@@ -1,2 +1,19 @@
 @import "tailwindcss";
 @plugin "daisyui";
+
+input, textarea, select {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+}
+
+input:-webkit-autofill {
+    background-color: #ffffff !important;
+    -webkit-text-fill-color: #000000 !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+input.dark,
+textarea.dark {
+    background-color: #ffffff !important;
+    accent-color: #ffffff !important;
+}

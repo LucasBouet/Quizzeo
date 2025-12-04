@@ -2,6 +2,7 @@
 
 require "models/databaseModel.php";
 require "models/jwt.php";
+require "models/createModel.php";
 
 $error = null;
 $success = null;
@@ -26,9 +27,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         } elseif (!password_verify($password, $user['Password'])) {
             $error = "Invalid username or password.";
         } else {
-            // session_start();
-            // $_SESSION['user_id'] = $user['ID'];
-            // $_SESSION['username'] = $user['Username'];
             $jwtHelper = new JWT();
             $token = $jwtHelper->encode(['user_id' => $user['ID'], 'username' => $user['Username'], 'role' => $user['Role']]);
             setcookie("auth_token", $token, time() + 3600, "/", "", false, true); // 1 hour expiry

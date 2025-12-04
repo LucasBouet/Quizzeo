@@ -11,6 +11,7 @@ if (isset($_COOKIE["auth_token"])) {
     $jwtHelper = new JWT();
     $jwt = $jwtHelper->decode($_COOKIE["auth_token"]);
     $role = $jwt['body']['role'];
+    $username = getUserFromId($jwt['body']['user_id'])['Username'];
         if ($role == "Entreprise") {
             $quizzs = getAllQuizzs();
             $questions = [];
@@ -18,26 +19,27 @@ if (isset($_COOKIE["auth_token"])) {
             foreach ($quizzs as $quizz) {
                 $questions[$quizz['ID']] = [];
                 $maxPosition = getMaxPositionEntreprise($quizz['ID']);
-                var_dump($maxPosition);
-                echo "<br/>";
                 for ($i = 1; $i <= $maxPosition; $i++) {
                     array_push($questions[$quizz['ID']], getQuestionEntrepriseByQuizzAndPosition($quizz['ID'], $i));
                 }
                 
             }
-            echo "<pre>";
-            var_dump($questions);
-            echo "</pre><br/>";
-            echo "<pre>";
-            var_dump($reponses);
-            echo "</pre><br/>";
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if (isset($_POST['function']) && $_POST['function'] == 'createQuizz') {
                     $name = $_POST['name'];
                     $id = createQuizz($name, $jwt);
-                    echo "Quizz created successfully with id $id";
+                    echo "Quizz created successfuly with id $id";
                     echo "<script>window.location.href = window.location.pathname;</script>";
                     exit;
+                } elseif (isset($_POST['function']) && $_POST['function'] == "activerDesactiverQuizz") {
+                    $id = $_POST['id'];
+                    $status = isQuizzFinished($id);
+                    if ($status) {
+                        unfinishQuizz($id);
+                    } else {
+                        finishQuizz($id);
+                    }
+                    
                 } elseif (isset($_POST['function']) && $_POST['function'] == 'createQuestionEntreprise') {
                     $title = $_POST['title'];
                     $id = $_POST['id'];
@@ -90,10 +92,6 @@ if (isset($_COOKIE["auth_token"])) {
                     $question = $_POST['question'];
                     $position = $_POST['position'];
                     $subarray = $questions[$questionId];
-                    echo "<pre>";
-                    var_dump($reponses);
-                    var_dump($answers);
-                    echo "</pre>";
                     $oldAnswers = [];
                     foreach ($reponses as $rep) {
                         $oldAnswers[$rep['ID']] = $rep['Text'];
@@ -135,31 +133,26 @@ if (isset($_COOKIE["auth_token"])) {
         foreach ($quizzs as $quizz) {
             $questions[$quizz['ID']] = [];
             $maxPosition = getMaxPositionEcole($quizz['ID']);
-            var_dump($maxPosition);
-            echo "<br/>";
             for ($i = 1; $i <= $maxPosition; $i++) {
                 array_push($questions[$quizz['ID']], getQuestionEcoleByQuizzAndPosition($quizz['ID'], $i));
             }
             
         }
-        echo "<pre>";
-        echo "Questions:";
-        var_dump($questions);
-        echo "</pre><br/>";
-        echo "<pre>";
-        echo "Réponses:";
-        var_dump($reponses);
-        echo "</pre><br/>";
-        echo "<pre>";
-        echo "Réponses libres:";
-        var_dump($reponsesLibres);
-        echo "</pre><br/>";
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (isset($_POST['function']) && $_POST['function'] == 'createQuizz') {
                 $name = $_POST['name'];
                 $id = createQuizz($name, $jwt);
                 echo "<script>window.location.href = window.location.pathname;</script>";
                 exit;
+            } elseif (isset($_POST['function']) && $_POST['function'] == "activerDesactiverQuizz") {
+                $id = $_POST['id'];
+                $status = isQuizzFinished($id);
+                if ($status) {
+                    unfinishQuizz($id);
+                } else {
+                    finishQuizz($id);
+                }
+                
             } elseif (isset($_POST['function']) && $_POST['function'] == 'createQuestionEcole') {
                 $title = $_POST['title'];
                 $points = $_POST['points'];
@@ -171,13 +164,6 @@ if (isset($_COOKIE["auth_token"])) {
                 $position = getMaxPositionEcole($id) + 1;
                 
                 if ($type == 'multiple') {
-                    echo "WORKING BRR BRR";
-                    echo "<pre>";
-                    var_dump($answers);
-                    echo "</pre><br/>";
-                    echo "<pre>";
-                    var_dump($isAnswer);
-                    echo "</pre><br/>";
                     
                     $qcmId = createQcmEcole($id, $position, $points, $title);
                     foreach ($answers as $key => $answer) {
@@ -227,11 +213,6 @@ if (isset($_COOKIE["auth_token"])) {
                 $points = $_POST['points'];
                 $answers = $_POST['answers'];
                 $isAnswer = $_POST['isAnswer'];
-                echo "<pre>";
-                var_dump($isAnswer);
-                var_dump($answers);
-                echo "</pre>";
-                //die();
                 $oldNote = getQcmEcoleById($id)['Poinst'];
                 if ($oldNote != $points) {
                     updateQcmEcolePoints($id, $points);
@@ -239,7 +220,6 @@ if (isset($_COOKIE["auth_token"])) {
                 suppAnswersCheckboxEcoleByQuestionId($id);
                 foreach($answers as $key => $value) {
                     var_dump($value);
-                    //die();
                     createReponseQcmEcole($id, $value, $isAnswer[$key]);
                 }
                 echo "<script>window.location.href = window.location.pathname;</script>";

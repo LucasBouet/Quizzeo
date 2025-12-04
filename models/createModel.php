@@ -3,7 +3,7 @@ function createQuizz(string $name, array $jwt): int
 {
     $pdo = getDatabaseConnection();
     $stmt = $pdo->prepare(
-        "INSERT INTO `Quizzs` (`Name`, `Creator_id`, `Active`, `Finished`) VALUES (:name, :id, 0,0)",
+        "INSERT INTO `Quizzs` (`Name`, `Creator_id`, `Active`, `Finished`) VALUES (:name, :id, 1,0)",
     );
     $stmt->execute([
         "name" => $name,
@@ -486,6 +486,16 @@ function addParticipation(int $userId, int $quizzId) : void {
     ]);
 }
 
+function addParticipationWithNote(int $userId, int $quizzId, int $note) : void {
+    $pdo = getDatabaseConnection();
+    $stmt = $pdo->prepare("INSERT INTO Participation_users (Id_user, Id_quizz, Note) VALUES (:user_id, :quizz_id, :note);");
+    $stmt->execute([
+        "user_id" => $userId,
+        "quizz_id" => $quizzId,
+        "note" => $note
+    ]);
+}
+
 function checkIfUserHasParticipated(int $userId, int $quizzId) : bool {
     $pdo = getDatabaseConnection();
     $stmt = $pdo->prepare("SELECT COUNT(*) FROM Participation_users WHERE Id_user = :user_id AND Id_quizz = :quizz_id;");
@@ -519,6 +529,182 @@ function updateQcmEcolePoints(int $id, int $points) : void {
         "id" => $id,
         "points" => $points,
     ]);
+}
+
+function getUserFromId(int $id) : array {
+    $pdo = getDatabaseConnection();
+    $stmt = $pdo->prepare("SELECT * FROM Users WHERE ID = :id;");
+    $stmt->execute([
+        "id" => $id
+    ]);
+    return $stmt->fetch();
+}
+
+function getTotalpointsByQuizzId(int $quizzId) : int {
+    $pdo = getDatabaseConnection();
+    $stmt = $pdo->prepare("SELECT SUM(Points) AS total_points FROM (SELECT Points FROM Questions_libre_ecole WHERE Quizz_id = :quizzId UNION ALL SELECT Points FROM Questions_checkbox_ecole WHERE Quizz_id = :quizzid2) AS all_points;");
+    $stmt->execute([
+        "quizzId" => $quizzId,
+        "quizzid2" => $quizzId
+    ]);
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    return (int)$result['total_points'];
+}
+
+function isQuizzActive(int $quizzId) : bool {
+    $pdo = getDatabaseConnection();
+    $stmt = $pdo->prepare("SELECT Active FROM Quizzs WHERE ID = :quizzId;");
+    $stmt->execute([
+        "quizzId" => $quizzId
+    ]);
+    return (bool)$stmt->fetchColumn();
+}
+
+function isQuizzFinished(int $quizzId) : bool {
+    $pdo = getDatabaseConnection();
+    $stmt = $pdo->prepare("SELECT Finished FROM Quizzs WHERE ID = :quizzId;");
+    $stmt->execute([
+        "quizzId" => $quizzId
+    ]);
+    return (bool)$stmt->fetchColumn();
+}
+
+function finishQuizz(int $quizzId) : void {
+    $pdo = getDatabaseConnection();
+    $stmt = $pdo->prepare("UPDATE Quizzs SET Finished = 1 WHERE ID = :quizzId;");
+    $stmt->execute([
+        "quizzId" => $quizzId
+    ]);
+}
+
+function unfinishQuizz(int $quizzId) : void {
+    $pdo = getDatabaseConnection();
+    $stmt = $pdo->prepare("UPDATE Quizzs SET Finished = 0 WHERE ID = :quizzId;");
+    $stmt->execute([
+        "quizzId" => $quizzId
+    ]);
+}
+
+// function isUserActive(int $userId) : bool {
+//     $pdo = getDatabaseConnection();
+//     $stmt = $pdo->prepare("SELECT Active FROM Users WHERE ID = :userId;");
+//     $stmt->execute([
+//         "userId" => $userId
+//     ]);
+//     return (bool)$stmt->fetchColumn();
+// }
+
+function getAllUsers() : array {
+    $pdo = getDatabaseConnection();
+    $stmt = $pdo->prepare("SELECT * FROM Users;");
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function deactivateUser(int $userId) : void {
+    $pdo = getDatabaseConnection();
+    $stmt = $pdo->prepare("UPDATE Users SET Active = 0 WHERE ID = :userId;");
+    $stmt->execute([
+        "userId" => $userId
+    ]);
+}
+
+function activateUser(int $userId) : void {
+    $pdo = getDatabaseConnection();
+    $stmt = $pdo->prepare("UPDATE Users SET Active = 1 WHERE ID = :userId;");
+    $stmt->execute([
+        "userId" => $userId
+    ]);
+}
+
+function deactivateQuizz(int $quizzId) : void {
+    $pdo = getDatabaseConnection();
+    $stmt = $pdo->prepare("UPDATE Quizzs SET Active = 0 WHERE ID = :quizzId;");
+    $stmt->execute([
+        "quizzId" => $quizzId
+    ]);
+}
+
+function activateQuizz(int $quizzId) : void {
+    $pdo = getDatabaseConnection();
+    $stmt = $pdo->prepare("UPDATE Quizzs SET Active = 1 WHERE ID = :quizzId;");
+    $stmt->execute([
+        "quizzId" => $quizzId
+    ]);
+}
+
+function getQuizzByCreatorId(int $creatorId) : array {
+    $pdo = getDatabaseConnection();
+    $stmt = $pdo->prepare("SELECT * FROM Quizzs WHERE Creator_id = :creatorId;");
+    $stmt->execute([
+        "creatorId" => $creatorId
+    ]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function getNumberParticipationByQuizzId(int $quizzId) : int {
+    $pdo = getDatabaseConnection();
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM Participation_users WHERE Id_quizz = :quizzId;");
+    $stmt->execute([
+        "quizzId" => $quizzId
+    ]);
+    return (int)$stmt->fetchColumn();
+}
+
+function getAverageNoteByQuizzId(int $quizzId) : float {
+    $pdo = getDatabaseConnection();
+    $stmt = $pdo->prepare("SELECT AVG(Note) FROM Participation_users WHERE Id_quizz = :quizzId;");
+    $stmt->execute([
+        "quizzId" => $quizzId
+    ]);
+    return (float)$stmt->fetchColumn();
+}
+
+function getReponseLibreEntrepriseById(int $id) {
+    $pdo = getDatabaseConnection();
+    $stmt = $pdo->prepare("SELECT * FROM Reponses_libre_entreprise WHERE Question_id = :id");
+    $stmt->execute([
+        "id" => $id,
+    ]);
+    return $stmt->fetchAll();
+}
+
+function getReponseQcmEntrepriseByQuestionId(int $questionId) {
+    $pdo = getDatabaseConnection();
+    $stmt = $pdo->prepare("SELECT * FROM Answers_checkbox_entreprise WHERE Question_id = :question_id;");
+    $stmt->execute([
+        "question_id" => $questionId
+    ]);
+    return $stmt->fetchAll();
+}
+
+function getNumberOfQuizzDoneByUserId(int $userId) : int {
+    $pdo = getDatabaseConnection();
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM Participation_users WHERE Id_user = :userId;");
+    $stmt->execute([
+        "userId" => $userId
+    ]);
+    return (int)$stmt->fetchColumn();
+}
+
+function getAnsweredQuizzByUserId(int $userId) : array {
+    $pdo = getDatabaseConnection();
+    $stmt = $pdo->prepare("SELECT * FROM Quizzs JOIN Participation_users ON Quizzs.ID = Participation_users.Id_quizz WHERE Participation_users.Id_user = :userId;");
+    $stmt->execute([
+        "userId" => $userId
+    ]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function getUserNoteForQuizz(int $userId, int $quizzId) : ?int {
+    $pdo = getDatabaseConnection();
+    $stmt = $pdo->prepare("SELECT Note FROM Participation_users WHERE Id_user = :userId AND Id_quizz = :quizzId;");
+    $stmt->execute([
+        "userId" => $userId,
+        "quizzId" => $quizzId
+    ]);
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $result ? (int)$result['Note'] : null;
 }
 
 ?>

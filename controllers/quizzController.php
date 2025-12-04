@@ -40,6 +40,22 @@ if ($_SERVER['REQUEST_METHOD'] === "GET") {
         echo "Quizz found and ready to display! <br/>";
         $creatorRole = getRoleFromQuizzId($quizz);
         echo "Quizz created by a(n) $creatorRole";
+        
+        if (checkIfUserHasParticipated($userId, $quizz)) {
+            echo "<br/>You have already participated in this quizz.<br/>";
+            die();
+        }
+        
+        if (!isQuizzActive($quizz)) {
+            echo "<br/>This quizz is not active.<br/>";
+            die();
+        }
+        
+        if (!isQuizzFinished($quizz)) {
+            echo "<br/>This quizz is not yet available.<br/>";
+            die();
+        }
+        
         if ($creatorRole == "Entreprise") {
             // entreprise
             $questions = [];
@@ -54,21 +70,8 @@ if ($_SERVER['REQUEST_METHOD'] === "GET") {
                 }
                 
             }
-            echo "<pre>";
-            var_dump($quizz);
-            echo "</pre>";
-            echo "<pre>";
-            var_dump($quizzData);
-            echo "</pre>";
-            echo "<pre>";
-            var_dump($questions);
-            echo "</pre>";
-            echo "<pre>";
-            var_dump($reponses);
-            echo "</pre>";
-            // die();
+
         } elseif ($creatorRole == "Ecole") {
-            // ecole
             $questions = [];
             $reponses = [];
             $maxNumberOfQuestions = getMaxPositionEcole($quizz);
@@ -82,22 +85,6 @@ if ($_SERVER['REQUEST_METHOD'] === "GET") {
                 
             }
             $reponsesLibres = getReponseLibreEcole($quizz);
-            echo "<pre>";
-            var_dump($quizz);
-            echo "</pre>";
-            echo "<pre>";
-            var_dump($quizzData);
-            echo "</pre>";
-            echo "<pre>";
-            var_dump($questions);
-            echo "</pre>";
-            echo "<pre>";
-            var_dump($reponses);
-            echo "</pre>";
-            echo "<pre>";
-            var_dump($reponsesLibres);
-            echo "</pre>";
-            // die();
         }
     } else {
         header('Location: /');
@@ -125,14 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === "GET") {
             echo "You have already participated in this quizz.";
             die();
         }
-        
-        echo "<pre>";
-        var_dump($formAnswers);
-        echo "</pre>";
-        echo "<pre>";
-        var_dump($userId);
-        echo "</pre>";
-        // die();
+
         foreach($formAnswers as $key => $value) {
             if (!is_array($value)) {
                 addReponseLibreEntreprise($questions[$key]['ID'], $value);
@@ -163,25 +143,12 @@ if ($_SERVER['REQUEST_METHOD'] === "GET") {
                 }
             }
         }
-        
+
         if (checkIfUserHasParticipated($userId, $quizzId)) {
             echo "You have already participated in this quizz.";
             die();
         }
         
-        echo "<pre>";
-        var_dump($formAnswers);
-        echo "</pre>";
-        echo "<pre>";
-        var_dump($userId);
-        echo "</pre>";
-        echo "<pre>";
-        var_dump($reponsesLibres);
-        echo "</pre>";
-        echo "Question id :<pre>";
-        var_dump($questionIds);
-        echo "</pre>";
-        // die();
         foreach($formAnswers as $key => $value) {
             if (!is_array($value)) {
                 // calculate 
@@ -194,14 +161,15 @@ if ($_SERVER['REQUEST_METHOD'] === "GET") {
                     }
                 }
                 
-                echo '<br/>'.$localAnswer.'<br/>';
                 if (comparer_flou_similarite($localAnswer, $value, 90.0)) {
                     $localNote = 0;
                     foreach ($questions as $q) {
-                        if ($q['Type'] == 'libre') {
-                            if ($q['ID'] == $questionId) {
-                                $localNote = $q['Points'];
-                                break;
+                        if (is_array($q)) {
+                            if ($q['Type'] == 'libre') {
+                                if ($q['ID'] == $questionId) {
+                                    $localNote = $q['Points'];
+                                    break;
+                                }
                             }
                         }
                     }
@@ -211,11 +179,7 @@ if ($_SERVER['REQUEST_METHOD'] === "GET") {
             } else {
                 $questionId = $questionIds[$key];
                 $localReponses = getReponsesCheckboxEcoleByQuestionId($questionId);
-                echo "<br/>Reponses:<br/><pre>";
-                var_dump($localReponses);
-                echo "</pre>";
-                // die();
-                // IDs bonnes réponses
+
                 $goodIds = array_map('intval',
                     array_column(
                         array_filter($localReponses, fn($r) => $r['Is_answer'] == 1),
@@ -231,7 +195,6 @@ if ($_SERVER['REQUEST_METHOD'] === "GET") {
                 sort($userChecked);
                 
                 if ($goodIds === $userChecked) {
-                    // bonne question
                     $localNote = 0;
                     foreach ($questions as $q) {
                         if (is_array($q)) {
@@ -246,30 +209,12 @@ if ($_SERVER['REQUEST_METHOD'] === "GET") {
                     $note += $localNote;
                     addPassedQuestionQcmEcole($questionId);
                 }
-                // foreach($value as $place => $checked) {
-                //     foreach($localReponses as $localReponse) {
-                //         if ($localReponse['ID'] == $checked) {
-                //             if ($localReponse['Is_answer'] == 1) {
-                //                 $localNote = 0;
-                //                 foreach ($questions as $q) {
-                //                     if ($q['Type'] == 'checkbox') {
-                //                         if ($q['ID'] == $questionId) {
-                //                             $localNote = $q['Points'];
-                //                             break;
-                //                         }
-                //                     }
-                //                 }
-                //                 $note += $localNote;
-                //                 // addPassedQuestionCheckboxEcole($checked);
-                //             }
-                //         }
-                //     }
-                // }
             }
         }
-        // addParticipation($userId, $quizzId);
+        addParticipationWithNote($userId, $quizzId, $note);
+        $totalMaxNote = getTotalpointsByQuizzId($quizzId);
         echo "<br/>";
-        var_dump($note);
+        echo "<h1>Your total score is $note / $totalMaxNote<h1>";
         echo "<br/>";
         echo "Thank you for your submission!";
         die();
