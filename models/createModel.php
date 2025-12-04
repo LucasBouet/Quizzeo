@@ -20,7 +20,7 @@ function getAllQuizzs(): array
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-function getQuizzById(int $id): array
+function getQuizzById(int $id): array|bool
 {
     $pdo = getDatabaseConnection();
     $stmt = $pdo->prepare("SELECT * FROM `Quizzs` WHERE `id` = :id");
@@ -111,7 +111,7 @@ function createQcmEcole(int $quizzid, int $position, int $points, string $questi
 {
     $pdo = getDatabaseConnection();
     $stmt = $pdo->prepare(
-        "INSERT INTO `Questions_qcm_ecole` (`Quizz_id`, `Position`, `Points`, `Question`) VALUES (:quizzid, :position, :points, :question)",
+        "INSERT INTO `Questions_checkbox_ecole` (`Quizz_id`, `Position`, `Points`, `Question`) VALUES (:quizzid, :position, :points, :question)",
     );
     $stmt->execute([
         "quizzid" => $quizzid,
@@ -124,7 +124,7 @@ function createQcmEcole(int $quizzid, int $position, int $points, string $questi
 
 function getQcmEcoleById(int $id): ?array {
     $pdo = getDatabaseConnection();
-    $stmt = $pdo->prepare("SELECT * FROM `Questions_qcm_ecole` WHERE `Id` = :id");
+    $stmt = $pdo->prepare("SELECT * FROM `Questions_checkbox_ecole` WHERE `Id` = :id");
     $stmt->execute([
         "id" => $id,
     ]);
@@ -133,14 +133,14 @@ function getQcmEcoleById(int $id): ?array {
 
 function getQcmEcole(): ?array {
     $pdo = getDatabaseConnection();
-    $stmt = $pdo->prepare("SELECT * FROM `Questions_qcm_ecole`");
+    $stmt = $pdo->prepare("SELECT * FROM `Questions_checkbox_ecole`");
     $stmt->execute();
     return $stmt->fetchAll();
 }
 
 function suppQcmEcole(int $id) : void {
     $pdo = getDatabaseConnection();
-    $stmt = $pdo->prepare("DELETE FROM `Questions_qcm_ecole` WHERE `id` = :id");
+    $stmt = $pdo->prepare("DELETE FROM `Questions_checkbox_ecole` WHERE `id` = :id");
     $stmt->execute([
         "id" => $id,
     ]);
@@ -148,7 +148,7 @@ function suppQcmEcole(int $id) : void {
 
 function updateQcmEcole(int $id, int $position, string $question, int $points): void {
     $pdo = getDatabaseConnection();
-    $stmt = $pdo->prepare("UPDATE `Questions_qcm_ecole` SET `Question` = :question, `Position` = :position, `Points` = :points WHERE `id` = :id");
+    $stmt = $pdo->prepare("UPDATE `Questions_checkbox_ecole` SET `Question` = :question, `Position` = :position, `Points` = :points WHERE `id` = :id");
     $stmt->execute([
         "id" => $id,
         "question" => $question,
@@ -169,7 +169,7 @@ function createReponseQcmEcole(
     $stmt->execute([
         "questionid" => $questionid,
         "text" => $text,
-        "isanswer" => $isanswer,
+        "isanswer" => (int)$isanswer,
     ]);
     return $pdo->lastInsertId();
 }
@@ -406,9 +406,119 @@ function getQuestionEcoleByQuizzAndPosition(int $id, int $position) {
 
 function getReponseLibreEcole() {
     $pdo = getDatabaseConnection();
-    $stmt = $pdo->prepare("SELECT Quizz_id, Reponse FROM Questions_libre_ecole;");
+    $stmt = $pdo->prepare("SELECT Quizz_id, ID, Reponse FROM Questions_libre_ecole;");
     $stmt->execute();
     return $stmt->fetchAll();
+}
+
+function suppAnswersCheckboxEcoleByQuestionId(int $quizzId) : void {
+    $pdo = getDatabaseConnection();
+    $stmt = $pdo->prepare("DELETE FROM Answers_checkbox_ecole WHERE Question_id = :question_id;");
+    $stmt->execute([
+        "question_id" => $quizzId
+    ]);
+}
+
+function getRoleFromQuizzId(int $quizzId) {
+    $pdo = getDatabaseConnection();
+    $stmt = $pdo->prepare("SELECT Role FROM Users JOIN Quizzs ON Users.ID = Quizzs.Creator_id WHERE Quizzs.ID = :quizz_id;");
+    $stmt->execute([
+        "quizz_id" => $quizzId
+    ]);
+    return $stmt->fetchColumn();
+}
+
+function comparer_flou_similarite(string $reponse, string $input_user, float $seuil_min = 90.0): bool {
+    $pourcentage = 0.0;
+
+    // Normalisation optionnelle (pour ignorer la casse et les espaces superflus)
+    $reponse_norm = trim(strtolower($reponse));
+    $input_user_norm = trim(strtolower($input_user));
+
+    // similar_text stocke la similarité en pourcentage dans la variable $pourcentage
+    similar_text($reponse_norm, $input_user_norm, $pourcentage);
+
+    return $pourcentage >= $seuil_min;
+}
+
+
+function getReponsesCheckboxEntrepriseByQuestionId(int $questionId) {
+    $pdo = getDatabaseConnection();
+    $stmt = $pdo->prepare("SELECT * FROM Answers_checkbox_entreprise WHERE Question_id = :question_id;");
+    $stmt->execute([
+        "question_id" => $questionId
+    ]);
+    return $stmt->fetchAll();
+}
+
+function getReponsesCheckboxEcoleByQuestionId(int $questionId) {
+    $pdo = getDatabaseConnection();
+    $stmt = $pdo->prepare("SELECT * FROM Answers_checkbox_ecole WHERE Question_id = :question_id;");
+    $stmt->execute([
+        "question_id" => $questionId
+    ]);
+    return $stmt->fetchAll();
+}
+
+function addReponseLibreEntreprise(int $questionId, string $reponse) : void {
+    $pdo = getDatabaseConnection();
+    $stmt = $pdo->prepare("INSERT INTO Reponses_libre_entreprise (Question_id, Text) VALUES (:question_id, :reponse);");
+    $stmt->execute([
+        "question_id" => $questionId,
+        "reponse" => $reponse
+    ]);
+}
+
+function addOneAnsweredCheckboxEntreprise(int $id) : void {
+    $pdo = getDatabaseConnection();
+    $stmt = $pdo->prepare("UPDATE Answers_checkbox_entreprise SET Answered = Answered + 1 WHERE ID = :id;");
+    $stmt->execute([
+        "id" => $id
+    ]);
+}
+
+function addParticipation(int $userId, int $quizzId) : void {
+    $pdo = getDatabaseConnection();
+    $stmt = $pdo->prepare("INSERT INTO Participation_users (Id_user, Id_quizz) VALUES (:user_id, :quizz_id);");
+    $stmt->execute([
+        "user_id" => $userId,
+        "quizz_id" => $quizzId
+    ]);
+}
+
+function checkIfUserHasParticipated(int $userId, int $quizzId) : bool {
+    $pdo = getDatabaseConnection();
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM Participation_users WHERE Id_user = :user_id AND Id_quizz = :quizz_id;");
+    $stmt->execute([
+        "user_id" => $userId,
+        "quizz_id" => $quizzId
+    ]);
+    return $stmt->fetchColumn() > 0;
+}
+
+function addPassedQuestionLibreEcole(int $questionId) : void {
+    $pdo = getDatabaseConnection();
+    $stmt = $pdo->prepare("UPDATE Questions_libre_ecole SET Passed = Passed + 1 WHERE ID = :question_id;");
+    $stmt->execute([
+        "question_id" => $questionId
+    ]);
+}
+
+function addPassedQuestionQcmEcole(int $questionId) : void {
+    $pdo = getDatabaseConnection();
+    $stmt = $pdo->prepare("UPDATE Questions_checkbox_ecole SET Passed = Passed + 1 WHERE ID = :question_id;");
+    $stmt->execute([
+        "question_id" => $questionId
+    ]);
+}
+
+function updateQcmEcolePoints(int $id, int $points) : void {
+    $pdo = getDatabaseConnection();
+    $stmt = $pdo->prepare("UPDATE `Questions_checkbox_ecole` SET `Points` = :points WHERE `id` = :id");
+    $stmt->execute([
+        "id" => $id,
+        "points" => $points,
+    ]);
 }
 
 ?>

@@ -36,6 +36,8 @@ if (isset($_COOKIE["auth_token"])) {
                     $name = $_POST['name'];
                     $id = createQuizz($name, $jwt);
                     echo "Quizz created successfully with id $id";
+                    echo "<script>window.location.href = window.location.pathname;</script>";
+                    exit;
                 } elseif (isset($_POST['function']) && $_POST['function'] == 'createQuestionEntreprise') {
                     $title = $_POST['title'];
                     $id = $_POST['id'];
@@ -141,20 +143,24 @@ if (isset($_COOKIE["auth_token"])) {
             
         }
         echo "<pre>";
+        echo "Questions:";
         var_dump($questions);
         echo "</pre><br/>";
         echo "<pre>";
+        echo "Réponses:";
         var_dump($reponses);
         echo "</pre><br/>";
         echo "<pre>";
+        echo "Réponses libres:";
         var_dump($reponsesLibres);
         echo "</pre><br/>";
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (isset($_POST['function']) && $_POST['function'] == 'createQuizz') {
                 $name = $_POST['name'];
                 $id = createQuizz($name, $jwt);
-                echo "Quizz created successfully with id $id";
-            } elseif (isset($_POST['function']) && $_POST['function'] == 'createQuestion') {
+                echo "<script>window.location.href = window.location.pathname;</script>";
+                exit;
+            } elseif (isset($_POST['function']) && $_POST['function'] == 'createQuestionEcole') {
                 $title = $_POST['title'];
                 $points = $_POST['points'];
                 $id = $_POST['id'];
@@ -165,17 +171,79 @@ if (isset($_COOKIE["auth_token"])) {
                 $position = getMaxPositionEcole($id) + 1;
                 
                 if ($type == 'multiple') {
+                    echo "WORKING BRR BRR";
+                    echo "<pre>";
+                    var_dump($answers);
+                    echo "</pre><br/>";
+                    echo "<pre>";
+                    var_dump($isAnswer);
+                    echo "</pre><br/>";
+                    
                     $qcmId = createQcmEcole($id, $position, $points, $title);
                     foreach ($answers as $key => $answer) {
-                        createReponseQcmEcole($qcmId, $answer, $isAnswer[$key]);
+                        $isCorrect = isset($isAnswer[$key]) && $isAnswer[$key] == "1" ? 1 : 0;
+                        echo $isCorrect;
+                        createReponseQcmEcole($qcmId, $answer, $isCorrect);
                     }
                     echo "<script>window.location.href = window.location.pathname;</script>";
                     exit;
                 } elseif ($type == 'libre') {
                     createQuestionLibreEcole($id, $position, $title, $answerLibre, $points);
+
                     echo "<script>window.location.href = window.location.pathname;</script>";
                     exit;
                 }
+            } elseif (isset($_POST['function']) && $_POST['function'] == "suppQuizz") {
+                if (isset($_POST['id']) && $_POST['id']) {
+                    suppQuizz($_POST['id']);
+                    echo "<script>window.location.href = window.location.pathname;</script>";
+                    exit;
+                }
+            } elseif (isset($_POST['function']) && $_POST['function'] == "updateQuestionLibreEcole") {
+                $id = $_POST['id'];
+                $position = $_POST['position'];
+                $title = $_POST['question'];
+                $answerLibre = $_POST['answer'];
+                $points = $_POST['points'];
+
+                updateQuestionLibreEcole($id, $position, $title, $answerLibre, $points);
+    
+                echo "<script>window.location.href = window.location.pathname;</script>";
+                exit;
+            } elseif (isset($_POST['function']) && $_POST['function'] == "suppQuestionLibreEcole") {
+                $id = $_POST['id'];
+                suppQuestionLibreEcole($id);
+                echo "<script>window.location.href = window.location.pathname;</script>";
+                exit;
+            } elseif (isset($_POST['function']) && $_POST['function'] == "suppQuestionMultiple") {
+                $id = $_POST['id'];
+                suppQcmEcole($id);
+                echo "<script>window.location.href = window.location.pathname;</script>";
+                exit;
+            } elseif (isset($_POST['function']) && $_POST['function'] == "updateQuestionMultipleEcole") {
+                $id = $_POST['id'];
+                $position = $_POST['position'];
+                $question = $_POST['question'];
+                $points = $_POST['points'];
+                $answers = $_POST['answers'];
+                $isAnswer = $_POST['isAnswer'];
+                echo "<pre>";
+                var_dump($isAnswer);
+                var_dump($answers);
+                echo "</pre>";
+                //die();
+                $oldNote = getQcmEcoleById($id)['Poinst'];
+                if ($oldNote != $points) {
+                    updateQcmEcolePoints($id, $points);
+                }
+                suppAnswersCheckboxEcoleByQuestionId($id);
+                foreach($answers as $key => $value) {
+                    var_dump($value);
+                    //die();
+                    createReponseQcmEcole($id, $value, $isAnswer[$key]);
+                }
+                echo "<script>window.location.href = window.location.pathname;</script>";
+                exit;
             }
         } elseif ($_SERVER['REQUEST_METHOD'] === 'GET') {
             // Handle GET request

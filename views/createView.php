@@ -37,7 +37,7 @@ case "Entreprise":
     <div class="quizz">
         <div>
         <h3><?php echo $quizz['Name']; ?></h3>
-
+        <h4>You can share the quizz with <a href='/quizz?quizz=<?= $quizz['ID']; ?>'>this link</a></h4>
         <form method="POST">
             <input type="hidden" name="id" value="<?= $quizz['ID']; ?>">
             <input type="hidden" name="function" value="createQuestionEntreprise">
@@ -66,7 +66,7 @@ case "Entreprise":
         </form>
         </div>
         <div>
-            <?php $subArray = $questions[$quizz['ID']]; ?>
+            <?php $subArray = $questions[$quizz['ID']] ?? null; ?>
             <?php foreach($subArray as $question): ?>
             <?php if ($question): ?>
                 <?php if ($question ['Type'] == 'libre'): ?>
@@ -118,7 +118,7 @@ case "Entreprise":
                 <?php endif; ?>
             <?php endforeach; ?>
         </div>
-    </div>
+        </div>
     <?php endforeach; ?>
 
 <?php endif; ?>
@@ -140,7 +140,131 @@ case 'Ecole':
         <?php foreach($quizzs as $quizz): ?>
             <div class="quizz">
                 <h3><?php echo $quizz['Name']; ?></h3>
-                
+                <div>
+                    <form method="POST">
+                        <input type="hidden" name="id" value="<?= $quizz['ID']; ?>">
+                        <input type="hidden" name="function" value="createQuestionEcole">
+            
+                        <label>Titre de la question :</label>
+                        <input type="text" name="title">
+            
+                        <label for="points">Nb de points :</label>
+                        <input type="number" id="points" name="points" min="1" required>
+                            
+                        <label>Type :</label>
+                        <select name="type"
+                                class="question-type"
+                                data-quizz="<?= $quizz['ID']; ?>">
+                            <option value="libre" selected>Choix libre</option>
+                            <option value="multiple">Choix multiple</option>
+                        </select>
+            
+                        <div id='libre-answer-container'></div>
+                        
+                        <div class="answers-container"
+                             data-container="<?= $quizz['ID']; ?>"
+                             style="margin-top:10px;"></div>
+            
+                        <button type="submit">Créer la question</button>
+                    </form>
+                    <form action="#" method="POST">
+                        <input type="hidden" name="function" value="suppQuizz">
+                        <input type="hidden" name="id" value="<?= $quizz['ID']; ?>">
+                        <button type="submit">Supprimer le quizz</button>
+                    </form>
+                    </div>
+                    <div>
+                        <?php $subArray = $questions[$quizz['ID']]; ?>
+                        <?php foreach($subArray as $question): ?>
+                        <?php if ($question): ?>
+                            <?php if ($question ['Type'] == 'libre'): ?>
+                                <div>
+                                    <form action="#" method="POST">
+                                        <input type="hidden" name="function" value="updateQuestionLibreEcole">
+                                        <input type="hidden" name="id" value="<?= $question['ID']; ?>">
+                                        <input type="hidden" name="position" value="<?= $question['Position']; ?>">
+                                        <label for="question">Titre de la question :</label>
+                                        <input type="text" name="question" value="<?php echo $question['Question']; ?>">
+                                        <label for="answer">Réponse :</label>
+                                        <?php
+                                        $labelReponseReal = "";
+                                        foreach ($reponsesLibres as $rep) {
+                                            if ($rep['ID'] == $question['ID']) {
+                                                $labelReponseReal = $rep['Reponse'];
+                                                break;
+                                            }
+                                        }
+                                        ?>
+                                        <input type="text" name="answer" value="<?php echo $labelReponseReal; ?>">
+                                        <label for="points">Points :</label>
+                                        <input type="number" name="points" value="<?php echo $question['Points']; ?>">
+                                        <button type="submit">Mettre à jour</button>
+                                    </form>
+                                    <form action="#" method="POST">
+                                        <input type="hidden" name="function" value="suppQuestionLibreEcole">
+                                        <input type="hidden" name="id" value="<?= $question['ID']; ?>">
+                                        <button type="submit">Supprimer</button>
+                                    </form>
+                                </div>
+                            <?php endif; ?>
+                            <?php if ($question['Type'] == 'checkbox'): ?>
+                                <div>
+                                    <form action="#" method="POST">
+                                        <input type="hidden" name="function" value="updateQuestionMultipleEcole">
+                                        <input type="hidden" name="id" value="<?= $question['ID']; ?>">
+                                        <input type="hidden" name="position" value="<?= $question['Position']; ?>">
+                                    
+                                        <label for="question">Titre de la question :</label>
+                                        <input type="text" name="question" value="<?= htmlspecialchars($question['Question']); ?>">
+                                    
+                                        <label for="points">Points :</label>
+                                        <input type="number" name="points" value="<?= $question['Points']; ?>" min="1">
+                                    
+                                        <div class="reponse-update-container">
+                                            <?php 
+                                            $i = 0;
+                                            foreach ($reponses as $reponse):
+                                                if ($reponse['Question_id'] == $question['ID']):
+                                            ?>
+                                            <div class="answer-field" style="margin-bottom:5px;">
+                                    
+                                                <input type="hidden" name="answer_ids[<?= $i ?>]" value="<?= $reponse['ID']; ?>">
+                                    
+                                                <input type="text" name="answers[<?= $i ?>]" value="<?= htmlspecialchars($reponse['Text']); ?>">
+                                    
+                                                <input type="hidden" name="isAnswer[<?= $i ?>]" value="0">
+                                                <input 
+                                                    type="checkbox"
+                                                    name="isAnswer[<?= $i ?>]"
+                                                    value="1"
+                                                    <?= $reponse['Is_answer'] ? "checked" : "" ?>
+                                                >
+                                    
+                                                <button type="button" class="remove-answer">❌</button>
+                                            </div>
+                                            <?php 
+                                            $i++;
+                                            endif;
+                                            endforeach;
+                                            ?>
+                                        </div>
+                                    
+                                        <button type="button" class="add-answer">Ajouter une réponse</button>
+                                        <button type="submit">Mettre à jour</button>
+                                    </form>
+
+                                    <form action="#" method="POST">
+                                        <input type="hidden" name="function" value="suppQuestionMultiple">
+                                        <input type="hidden" name="id" value="<?= $question['ID']; ?>">
+                                        <button type="submit">Supprimer</button>
+                                    </form>
+                                </div>
+                            <?php endif; ?>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                    </div>
+                    </div>
+                </div>
             </div>
         <?php endforeach; ?>
     <?php endif; ?>
@@ -212,6 +336,134 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 });
+</script>
+<?php endif; ?>
+<?php if ($role == 'Ecole'): ?>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    document.querySelectorAll(".add-answer").forEach(btn => {
+        btn.addEventListener("click", function () {
+
+            const container = btn.previousElementSibling;
+
+            // index = nombre d'éléments existants
+            let index = container.querySelectorAll(".answer-field").length;
+
+            const field = document.createElement("div");
+            field.className = "answer-field";
+            field.style.marginBottom = "5px";
+
+            field.innerHTML = `
+                <input type="hidden" name="answer_ids[${index}]" value="0">
+
+                <input type="text" name="answers[]" placeholder="Nouvelle réponse">
+
+                <input type="hidden" name="isAnswer[${index}]" value="0">
+                <input type="checkbox" name="isAnswer[${index}]" value="1">
+
+                <button type="button" class="remove-answer">❌</button>
+            `;
+
+            container.appendChild(field);
+        });
+    });
+
+    // suppression dynamique
+    document.querySelectorAll(".reponse-update-container").forEach(container => {
+        container.addEventListener("click", e => {
+            if (e.target.classList.contains("remove-answer")) {
+                e.target.parentElement.remove();
+            }
+        });
+    });
+
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    addAnswerLibre(document.getElementById("libre-answer-container"));
+    document.querySelectorAll(".question-type").forEach(select => {
+
+        select.addEventListener("change", event => {
+            const quizzId = event.target.dataset.quizz;
+            const container = document.querySelector(`.answers-container[data-container="${quizzId}"]`);
+
+            container.innerHTML = ""; // reset
+            
+            document.getElementById("libre-answer-container").innerHTML = "";
+
+            if (event.target.value === "multiple") {
+                addAnswerControls(container);
+            } else if (event.target.value === "libre") {
+                addAnswerLibre(document.getElementById("libre-answer-container"));
+            }
+        });
+    });
+});
+
+function addAnswerLibre(container) {
+  const input = document.createElement("input");
+  input.type = "text";
+  input.name = "answerLibre";
+  input.placeholder = "Réponse a la question";
+  container.appendChild(input);
+}
+
+function addAnswerControls(container) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = "Ajouter un choix";
+    btn.onclick = () => addAnswerField(container);
+
+    container.appendChild(btn);
+}
+
+function addAnswerField(container) {
+    const div = document.createElement("div");
+    div.style.marginTop = "5px";
+    let index = document.querySelector('.answers-container').querySelectorAll('div').length
+
+    div.innerHTML = `
+        <input type="text" name="answers[]" placeholder="Réponse possible">
+        <input type="hidden" name="isAnswer[${index}]" value="0">
+        <input type="checkbox" name="isAnswer[${index}]" value="1">
+        <button type="button" onclick="this.parentElement.remove()">❌</button>
+    `;
+
+    container.appendChild(div);
+}
+
+// document.addEventListener("DOMContentLoaded", () => {
+//     // Ajout dynamique de réponses sur les formulaires de modification
+//     document.querySelectorAll(".add-answer").forEach(btn => {
+//         btn.addEventListener("click", function () {
+//             const container = btn.previousElementSibling;
+//             const field = document.createElement("div");
+//             let index = document.querySelector('.answers-container').querySelectorAll('div').length
+//             field.className = "answer-field";
+//             field.style.marginBottom = "5px";
+//             field.innerHTML = `
+//                 <input type="text" name="answers[]" placeholder="Réponse possible">
+//                 <input type="hidden" name="isAnswer[${index}]" value="0">
+//                 <input type="checkbox" name="isAnswer[${index}]" value="1">
+//                 <button type="button" class="remove-answer">❌</button>
+//             `;
+//             container.appendChild(field);
+//         });
+//     });
+
+//     // Suppression dynamique des réponses
+//     document.querySelectorAll(".reponse-update-container").forEach(container => {
+//         container.addEventListener("click", function (e) {
+//             if (e.target.classList.contains("remove-answer")) {
+//                 e.target.parentElement.remove();
+//             }
+//         });
+//     });
+    
+    
+    
+// });
 </script>
 <?php endif; ?>
 </body>

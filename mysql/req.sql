@@ -49,7 +49,7 @@ CREATE TABLE Answers_checkbox_ecole (
     ID INT AUTO_INCREMENT PRIMARY KEY,
     Question_id INT NOT NULL,
     Text TEXT NOT NULL,
-    Is_answer BOOL DEFAULT 0,
+    Is_answer tinyint DEFAULT 0,
     FOREIGN KEY (Question_id) REFERENCES Questions_checkbox_ecole(ID)
         ON DELETE CASCADE
         ON UPDATE CASCADE
@@ -101,6 +101,7 @@ CREATE TABLE Answers_checkbox_entreprise (
     ID INT AUTO_INCREMENT PRIMARY KEY,
     Question_id INT NOT NULL,
     Text TEXT NOT NULL,
+    Answered INT DEFAULT 0,
     FOREIGN KEY (Question_id) REFERENCES Questions_checkbox_entreprise(ID)
         ON DELETE CASCADE
         ON UPDATE CASCADE
