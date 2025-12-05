@@ -25,7 +25,16 @@
                 <input type="password" id="password" name="password" required
                        class="w-full input input-bordered rounded-xl border-[#F49CA0] focus:border-[#d66b71] focus:outline-none" />
             </div>
-
+            <?php if (isset($captcha)): ?>
+            <div>
+                <label for="captcha" class="block font-semibold mb-1"><?= $captcha ?></label>
+                <input type="text" id="captcha" name="captcha" required
+                       class="w-full input input-bordered rounded-xl border-[#F49CA0] focus:border-[#d66b71] focus:outline-none" />
+            </div>
+            <?php endif; ?>
+            <?php if (!isset($captcha)): ?>
+            <a href="/login" class="block font-semibold mb-1 underline mb-3">Retry the captcha</a>
+            <?php endif; ?>
             <button type="submit"
                     class="w-full btn bg-[#F8C873] text-white border-none rounded-xl shadow-md hover:bg-[#e7b760]">
                 Login

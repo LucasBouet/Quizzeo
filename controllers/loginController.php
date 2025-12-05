@@ -1,4 +1,5 @@
 <?php
+session_start();
 
 require "models/databaseModel.php";
 require "models/jwt.php";
@@ -9,31 +10,65 @@ require "models/ecoleModel.php";
 $error = null;
 $success = null;
 
+if ($_SERVER['REQUEST_METHOD'] == "GET") {
+    $a = rand(1, 9);
+    $b = rand(1, 9);
+    
+    $ops = ['+', '-', '*'];
+    $op = $ops[array_rand($ops)];
+    
+    switch ($op) {
+        case '+':
+            $result = $a + $b;
+            break;
+        case '-':
+            $result = $a - $b;
+            break;
+        case '*':
+            $result = $a * $b;
+            break;
+    }
+    
+    $_SESSION['captcha'] = $result;
+    
+    $captcha = "Combien font $a $op $b ?";
+}
+
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
-
-    if (empty($username) || empty($password)) {
-        $error = "Username and password are required.";
+    $captchaUser = $_POST['captcha'] ?? '';
+    
+    if (empty($captchaUser)) {
+        $error = "Please fill the captcha";
     } else {
-        $pdo = getDatabaseConnection();
-        
-        $stmt = $pdo->prepare("SELECT ID, Username, Role, Password, active FROM Users WHERE Username = ?");
-        $stmt->execute([$username]);
-        $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if (!$user) {
-            $error = "Invalid username or password.";
-        } elseif (!$user['active']) {
-            $error = "Your account is inactive.";
-        } elseif (!password_verify($password, $user['Password'])) {
-            $error = "Invalid username or password.";
+        if ($captchaUser != $_SESSION['captcha']) {
+            $error = "Captcha is invalid";
         } else {
-            $jwtHelper = new JWT();
-            $token = $jwtHelper->encode(['user_id' => $user['ID'], 'username' => $user['Username'], 'role' => $user['Role']]);
-            setcookie("auth_token", $token, time() + 3600, "/", "", false, true); // 1 hour expiry
-            $success = "Login successful! Redirecting...";
-            header("refresh:2;url=/");
+            if (empty($username) || empty($password)) {
+                $error = "Username and password are required.";
+            } else {
+                $pdo = getDatabaseConnection();
+                
+                $stmt = $pdo->prepare("SELECT ID, Username, Role, Password, active FROM Users WHERE Username = ?");
+                $stmt->execute([$username]);
+                $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+                if (!$user) {
+                    $error = "Invalid username or password.";
+                } elseif (!$user['active']) {
+                    $error = "Your account is inactive.";
+                } elseif (!password_verify($password, $user['Password'])) {
+                    $error = "Invalid username or password.";
+                } else {
+                    $jwtHelper = new JWT();
+                    $token = $jwtHelper->encode(['user_id' => $user['ID'], 'username' => $user['Username'], 'role' => $user['Role']]);
+                    setcookie("auth_token", $token, time() + 3600, "/", "", false, true); // 1 hour expiry
+                    $success = "Login successful! Redirecting...";
+                    header("refresh:2;url=/");
+                }
+            }
         }
     }
 }

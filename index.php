@@ -7,6 +7,7 @@ $path = match(explode('?', $_SERVER["REQUEST_URI"])[0]) {
     '/quizz'=> 'controllers/quizzController.php',
     '/login'=> 'controllers/loginController.php',
     '/register'=> 'controllers/registerController.php',
+    '/api/captcha' => 'api/captcha.php',
     default => 'views/404.php',
 };
 

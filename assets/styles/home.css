@@ -11,6 +11,8 @@
     --color-red-600: oklch(57.7% 0.245 27.325);
     --color-green-500: oklch(72.3% 0.219 149.579);
     --color-green-600: oklch(62.7% 0.194 149.214);
+    --color-sky-600: oklch(58.8% 0.158 241.966);
+    --color-blue-600: oklch(54.6% 0.245 262.881);
     --color-gray-100: oklch(96.7% 0.003 264.542);
     --color-gray-200: oklch(92.8% 0.006 264.531);
     --color-gray-300: oklch(87.2% 0.01 258.338);
@@ -2197,6 +2199,9 @@
       --input-color: var(--color-primary);
     }
   }
+  .\!text-sky-600 {
+    color: var(--color-sky-600) !important;
+  }
   .text-\[\#6f57a8\] {
     color: #6f57a8;
   }
@@ -2224,6 +2229,9 @@
   .text-black {
     color: var(--color-black);
   }
+  .text-blue-600 {
+    color: var(--color-blue-600);
+  }
   .text-gray-500 {
     color: var(--color-gray-500);
   }
@@ -2238,6 +2246,9 @@
   }
   .text-red-500 {
     color: var(--color-red-500);
+  }
+  .text-sky-600 {
+    color: var(--color-sky-600);
   }
   .text-stone-800 {
     color: var(--color-stone-800);
