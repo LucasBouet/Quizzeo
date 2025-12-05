@@ -14,13 +14,13 @@
                             <?php if ($user['Active']): ?>
                                 <form method="POST" action="#" class="inline">
                                     <input type="hidden" name="function" value="deactivateUser">
-                                    <input type="hidden" name="userId" value="<?= $user['ID'] ?>">
+                                    <input type="hidden" name="userId" value="<?= htmlspecialchars($user['ID']); ?>">
                                     <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Deactivate</button>
                                 </form>
                             <?php else: ?>
                                 <form method="POST" action="#" class="inline">
                                     <input type="hidden" name="function" value="activateUser">
-                                    <input type="hidden" name="userId" value="<?= $user['ID'] ?>">
+                                    <input type="hidden" name="userId" value="<?= htmlspecialchars($user['ID']); ?>">
                                     <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Activate</button>
                                 </form>
                             <?php endif; ?>
@@ -40,13 +40,13 @@
                         <?php if ($quizz['Active']): ?>
                             <form method="POST" action="#" class="inline">
                                 <input type="hidden" name="function" value="deactivateQuizz">
-                                <input type="hidden" name="quizzId" value="<?= $quizz['ID'] ?>">
+                                <input type="hidden" name="quizzId" value="<?= htmlspecialchars($quizz['ID']); ?>">
                                 <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Deactivate</button>
                             </form>
                         <?php else: ?>
                             <form method="POST" action="#" class="inline">
                                 <input type="hidden" name="function" value="activateQuizz">
-                                <input type="hidden" name="quizzId" value="<?= $quizz['ID'] ?>">
+                                <input type="hidden" name="quizzId" value="<?= htmlspecialchars($quizz['ID']) ?>">
                                 <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Activate</button>
                             </form>
                         <?php endif; ?>
@@ -108,7 +108,7 @@
                                         <?php if (is_array($reponses)): ?>
                                             <?php foreach($reponses as $reponse): ?>
                                                 <div class="ml-4 mb-3 p-2 bg-white rounded shadow">
-                                                    <p><?= $reponse['Text'] ?> -- <?= $reponse['Answered'] ?> reponses</p>
+                                                    <p><?= htmlspecialchars($reponse['Text']); ?> -- <?= htmlspecialchars($reponse['Answered']); ?> reponses</p>
                                                 </div>
                                             <?php endforeach; ?>
                                         <?php endif; ?>

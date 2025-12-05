@@ -1,7 +1,9 @@
 <?php
 
 require "models/databaseModel.php";
-require "models/createModel.php";
+require "models/entrepriseModel.php";
+require "models/ecoleModel.php";
+require "models/utilityModel.php";
 require "models/jwt.php";
 
 if ($_SERVER['REQUEST_METHOD'] === "GET") {

@@ -2,7 +2,9 @@
 
 require "models/databaseModel.php";
 require "models/jwt.php";
-require "models/createModel.php";
+require "models/entrepriseModel.php";
+require "models/ecoleModel.php";
+require "models/utilityModel.php";
 
 if (isset($_COOKIE["auth_token"])) {
     $errors = [];

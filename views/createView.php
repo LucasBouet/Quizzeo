@@ -28,7 +28,7 @@ case "Entreprise":
         <div class="quizz card bg-gray-300 text-stone-900 shadow-xl border border-gray-200">
             <div class="card-body p-6">
                 <div class="flex justify-between items-start mb-4">
-                    <h3 class="card-title text-2xl text-accent-content"><?php echo $quizz['Name']; ?></h3>
+                    <h3 class="card-title text-2xl text-accent-content"><?php echo htmlspecialchars($quizz['Name']); ?></h3>
                     <div class="flex space-x-2 flex-row">
                         <form action="#" method="POST">
                             <input type="hidden" name="function" value="suppQuizz">
@@ -42,7 +42,7 @@ case "Entreprise":
                         </form>
                     </div>
                 </div>
-                <h2 class="text-sm text-gray-500 mb-6">You can share the quizz with <a href="/quizz?quizz=<?php echo $quizz['ID']; ?>" class="link link-hover text-info font-medium">this link</a></h2>
+                <h2 class="text-sm text-gray-500 mb-6">You can share the quizz with <a href="/quizz?quizz=<?php echo htmlspecialchars($quizz['ID']); ?>" class="link link-hover text-info font-medium">this link</a></h2>
     
                 <div class="divider"><h4 class='underline'>Ajouter une Question</h4></div>
                 <form method="POST" class="space-y-4">
@@ -114,7 +114,7 @@ case "Entreprise":
                                         <?php foreach($reponses as $reponse): ?>
                                             <?php if ($reponse['Question_id'] == $question['ID']): ?>
                                                 <div class="answer-field flex items-center space-x-2" style="margin-bottom:5px;">
-                                                    <input type="hidden" name="answer_ids[]" value="<?php echo $reponse['ID']; ?>">
+                                                    <input type="hidden" name="answer_ids[]" value="<?php echo htmlspecialchars($reponse['ID']); ?>">
                                                     <input type="text" name="answers[]" value="<?php echo htmlspecialchars($reponse['Text']); ?>" class="input input-bordered input-xs flex-grow">
                                                     <button type="button" class="remove-answer btn btn-ghost btn-xs">❌</button>
                                                 </div>
@@ -126,7 +126,7 @@ case "Entreprise":
                                 </form>
                                 <form action="#" method="POST">
                                     <input type="hidden" name="function" value="suppQuestionMultiple">
-                                    <input type="hidden" name="id" value="<?= $question['ID']; ?>">
+                                    <input type="hidden" name="id" value="<?= htmlspecialchars($question['ID']); ?>">
                                     <button type="submit" class="btn btn-warning btn-sm">Supprimer</button>
                                 </form>
                             </div>
@@ -168,16 +168,16 @@ case 'Ecole':
                 <div class="quizz card bg-gray-300 text-stone-900 shadow-xl border border-gray-200">
                     <div class="card-body p-6">
                         <div class="flex justify-between items-start mb-4">
-                            <h3 class="card-title text-2xl text-accent-content"><?php echo $quizz['Name']; ?></h3>
+                            <h3 class="card-title text-2xl text-accent-content"><?php echo htmlspecialchars($quizz['Name']); ?></h3>
                             <div class="flex space-x-2 flex-row">
                                 <form action="#" method="POST">
                                     <input type="hidden" name="function" value="suppQuizz">
-                                    <input type="hidden" name="id" value="<?= $quizz['ID']; ?>">
+                                    <input type="hidden" name="id" value="<?= htmlspecialchars($quizz['ID']); ?>">
                                     <button type="submit" class="btn btn-error btn-sm">Supprimer le quizz</button>
                                 </form>
                                 <form action="#" method="POST">
                                     <input type="hidden" name="function" value="activerDesactiverQuizz">
-                                    <input type="hidden" name="id" value="<?= $quizz['ID']; ?>">
+                                    <input type="hidden" name="id" value="<?= htmlspecialchars($quizz['ID']); ?>">
                                     <button type="submit" class="btn btn-<?php $statusLocal = isQuizzFinished($quizz['ID']); if (!$statusLocal) {echo "success";} else {echo "error";} ?> btn-sm"><?php if ($statusLocal) {echo "Retirer comme finit";} else {echo 'Marquer comme finit';} ?></button>
                                 </form>
                             </div>
@@ -186,7 +186,7 @@ case 'Ecole':
                     
                         <div class="divider"><h4 class="underline">Ajouter une Question</h4></div>
                         <form method="POST" class="space-y-4">
-                            <input type="hidden" name="id" value="<?= $quizz['ID']; ?>">
+                            <input type="hidden" name="id" value="<?= htmlspecialchars($quizz['ID']); ?>">
                             <input type="hidden" name="function" value="createQuestionEcole">
                     
                             <div class="form-control">
@@ -209,7 +209,7 @@ case 'Ecole':
                                 </label>
                                 <select name="type"
                                         class="question-type select select-bordered"
-                                        data-quizz="<?= $quizz['ID']; ?>">
+                                        data-quizz="<?= htmlspecialchars($quizz['ID']); ?>">
                                     <option value="libre" selected>Choix libre</option>
                                     <option value="multiple">Choix multiple</option>
                                 </select>
@@ -236,8 +236,8 @@ case 'Ecole':
                                         <div class="flex flex-col space-y-3">
                                             <form action="#" method="POST" class="space-y-2">
                                                 <input type="hidden" name="function" value="updateQuestionLibreEcole">
-                                                <input type="hidden" name="id" value="<?= $question['ID']; ?>">
-                                                <input type="hidden" name="position" value="<?= $question['Position']; ?>">
+                                                <input type="hidden" name="id" value="<?= htmlspecialchars($question['ID']); ?>">
+                                                <input type="hidden" name="position" value="<?= htmlspecialchars($question['Position']); ?>">
                                                 <label for="question" class="label-text font-medium">Titre de la question (Libre) :</label>
                                                 <input type="text" name="question" value="<?php echo htmlspecialchars($question['Question']); ?>" class="input input-bordered input-sm w-full">
                                                 
@@ -260,7 +260,7 @@ case 'Ecole':
                                             </form>
                                             <form action="#" method="POST">
                                                 <input type="hidden" name="function" value="suppQuestionLibreEcole">
-                                                <input type="hidden" name="id" value="<?= $question['ID']; ?>">
+                                                <input type="hidden" name="id" value="<?= htmlspecialchars($question['ID']); ?>">
                                                 <button type="submit" class="btn btn-warning btn-sm">Supprimer</button>
                                             </form>
                                         </div>
@@ -269,14 +269,14 @@ case 'Ecole':
                                         <div class="flex flex-col space-y-3">
                                             <form action="#" method="POST" class="space-y-2">
                                                 <input type="hidden" name="function" value="updateQuestionMultipleEcole">
-                                                <input type="hidden" name="id" value="<?= $question['ID']; ?>">
+                                                <input type="hidden" name="id" value="<?= htmlspecialchars($question['ID']); ?>">
                                                 <input type="hidden" name="position" value="<?= $question['Position']; ?>">
                                             
                                                 <label for="question" class="label-text font-medium">Titre de la question (Multiple) :</label>
                                                 <input type="text" name="question" value="<?= htmlspecialchars($question['Question']); ?>" class="input input-bordered input-sm w-full mb-3">
                                             
                                                 <label for="points" class="label-text font-medium">Points :</label>
-                                                <input type="number" name="points" value="<?= $question['Points']; ?>" min="1" class="input input-bordered input-sm w-full max-w-xs">
+                                                <input type="number" name="points" value="<?= htmlspecialchars($question['Points']); ?>" min="1" class="input input-bordered input-sm w-full max-w-xs">
                                             
                                                 <div class="reponse-update-container space-y-2 mt-4">
                                                     <p class="font-semibold text-sm">Choix de réponses (Cochez la/les bonne(s)) :</p>
@@ -286,7 +286,7 @@ case 'Ecole':
                                                         if ($reponse['Question_id'] == $question['ID']):
                                                     ?>
                                                     <div class="answer-field flex items-center space-x-2" style="margin-bottom:5px;">
-                                                        <input type="hidden" name="answer_ids[<?= $i ?>]" value="<?= $reponse['ID']; ?>">
+                                                        <input type="hidden" name="answer_ids[<?= $i ?>]" value="<?= htmlspecialchars($reponse['ID']); ?>">
                                                     
                                                         <input type="text" name="answers[<?= $i ?>]" value="<?= htmlspecialchars($reponse['Text']); ?>" class="input input-bordered input-xs flex-grow">
                                                     
@@ -314,7 +314,7 @@ case 'Ecole':
     
                                             <form action="#" method="POST">
                                                 <input type="hidden" name="function" value="suppQuestionMultiple">
-                                                <input type="hidden" name="id" value="<?= $question['ID']; ?>">
+                                                <input type="hidden" name="id" value="<?= htmlspecialchars($question['ID']); ?>">
                                                 <button type="submit" class="btn btn-warning btn-sm">Supprimer</button>
                                             </form>
                                         </div>

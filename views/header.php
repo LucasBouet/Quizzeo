@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/assets/styles/home.css">
-    <title><?php $titleNav = explode('?', $_SERVER['REQUEST_URI'])[0]; if ($titleNav == "/") {$titleNav = 'home';} else {$titleNav = str_replace('/', '', $titleNav);} echo $titleNav; ?></title>
+    <title><?php $titleNav = explode('?', $_SERVER['REQUEST_URI'])[0]; if ($titleNav == "/") {$titleNav = 'home';} else {$titleNav = str_replace('/', '', $titleNav);} echo htmlspecialchars($titleNav); ?></title>
 </head>
 <body>
     <nav class="navbar bg-white shadow-md px-6 py-4 border-b border-[#f7e4e4] fixed top-0 left-0 w-full z-50">
@@ -41,7 +41,7 @@
     
       <div class="navbar-end flex gap-3">
         <?php if (isset($username)): ?>
-            <p class='text-black'>Connected as <?= $username ?></p>
+            <p class='text-black'>Connected as <?= htmlspecialchars($username); ?></p>
         <?php endif; ?>
         <a class="btn rounded-xl bg-[#BCA5E3] border-none text-white shadow-md hover:bg-[#a58ed0]" href="/login">
           Login
